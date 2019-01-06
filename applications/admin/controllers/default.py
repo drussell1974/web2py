@@ -843,7 +843,7 @@ def edit():
         # drussell1974 - load new editor
 
         editor_html = 'default/edit_js.html'
-        if 1 == 1 : # TODO: get a mode from config?
+        if 1 == 1: # TODO: get a mode from config?
             editor_html = 'default/edit_with_webcontrol_js.html'
 
         plain_html = response.render(editor_html, file_details)

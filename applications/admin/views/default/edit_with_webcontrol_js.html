@@ -5,10 +5,10 @@
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
 
-<form action="{{=URL('edit_webcontrol', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" class="form-inline row-fluid">
+<form action="{{=URL('edit', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" class="form-inline row-fluid">
         <div id="edit_aswebcontrol_placeholder" class="tab-content span12 well well-small">
                 <label>Save form control:</label>
-                <a value="save" title="Save file: learn_python/models/simple_form.py" href="#" name="save_control" onclick="return doClickSaveControl();" class="icon saveicon" style="background-image: -webkit-linear-gradient(top,white,#E6E6E6);">
+                <a value="save" title="Save file: learn_python/models/simple_form.py" href="#" name="save_webcontrol" onclick="return doClickSaveControl();" class="icon saveicon" style="background-image: -webkit-linear-gradient(top,white,#E6E6E6);">
                     <img alt="Save" src="/admin/static/_2.17.2/images/save_icon.png">
                 </a>
                 <label>Control</label>
@@ -71,6 +71,12 @@
 </div>
 
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
+    <style>
+        .highlight-property {
+            background-color: #fff2ac;
+            background-image: linear-gradient(to right, #ffe359 0%, #fff2ac 100%);
+        }
+    </style>
     <script>
     var editor = CodeMirror.fromTextArea(document.getElementById("textarea_{{=id}}"),{
     {{if filetype=='html':}}
@@ -176,6 +182,17 @@
     CodeMirror.commands.save = function () {
         doClickSave();
     }
+
+    // TODO: drussell1974 - put in a separated file
+
+    doc = editor.getDoc();
+
+    start = { line: 1, ch: 0 };
+    end = { line: 1, ch: 4};
+    options = { className: 'highlight-property' }
+
+    doc.markText(start, end, options);
+
     </script>
 
     <div class="editor-bar-bottom" style="margin-top:9px;">
