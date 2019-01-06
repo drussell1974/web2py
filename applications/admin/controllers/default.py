@@ -855,9 +855,6 @@ def edit():
             return response.json(file_details)
 
 
-def edit_webcontrol():
-    pass
-
 def todolist():
     """ Returns all TODO of the requested app
     """

@@ -12,11 +12,9 @@
                     <img alt="Save" src="/admin/static/_2.17.2/images/save_icon.png">
                 </a>
                 <label>Control</label>
-                <select name="control_variable" required class="input-normal">
+                <select name="control_variable" required class="input-normal" id="variables_from_file">
                     <!-- TODO: drussell1974 - Load the list of variables in the module or class -->
                     <option value="">- select a variable -</option>
-                    <option value="name">name</option>
-                    <option value="age">age</option>
                 </select>
                 <label>Label:</label>
                 <input type="text" name="control_label" class="input-normal" placeholder="enter text of the label" />
@@ -185,13 +183,47 @@
 
     // TODO: drussell1974 - put in a separated file
 
+
     doc = editor.getDoc();
 
-    start = { line: 1, ch: 0 };
-    end = { line: 1, ch: 4};
-    options = { className: 'highlight-property' }
+    function highlightText(start, end, options){
+        // highlight text
+        // start = { line: 1, ch: 0 };
+        // end = { line: 1, ch: 4};
+        // options = { className: 'highlight-property' }
 
-    doc.markText(start, end, options);
+        doc.markText(start, end, options);
+    }
+
+    function readFile(){
+        // read each line from the start and end (not including the end) in the file
+        variables_found_in_file = [];
+        lines = doc.eachLine(start = 0, end = 20, f = function(line){
+            // TODO: drussell1974 - ensure = is not in a comment (',#,""")... or in a string (', ")
+            if (/"""/.test(line.text) === false && /^#/.test(line.text) === false && /^'/.test(line.text) === false) {
+                vble = line.text.split('=');
+                if( vble.length > 1) {
+                    variables_found_in_file.push(vble[0]);
+                }
+            }
+        });
+
+        // drussell1974 - populate the drop down 'variables_from_file'
+
+        var select = document.getElementById('variables_from_file');
+        // clear the drop down
+        for (i = 0; i < select.options.length - 1; i++) {
+          select.options[i] = null;
+        }
+        // fill it again
+        for(index in variables_found_in_file) {
+            select.options[select.options.length] = new Option(variables_found_in_file[index], index);
+        }
+    }
+
+    // TODO: drussell1974 - move to document load event
+    editor.on("changes", readFile);
+    readFile();
 
     </script>
 
