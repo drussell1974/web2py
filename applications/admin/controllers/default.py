@@ -839,7 +839,14 @@ def edit():
                             id=IS_SLUG()(filename)[0],
                             force=True if (request.vars.restore or
                                            request.vars.revert) else False)
-        plain_html = response.render('default/edit_js.html', file_details)
+
+        # drussell1974 - load new editor
+
+        editor_html = 'default/edit_js.html'
+        if 1 == 1 : # TODO: get a mode from config?
+            editor_html = 'default/edit_with_webcontrol_js.html'
+
+        plain_html = response.render(editor_html, file_details)
         file_details['plain_html'] = plain_html
         if is_mobile:
             return response.render('default.mobile/edit.html',
@@ -847,6 +854,9 @@ def edit():
         else:
             return response.json(file_details)
 
+
+def edit_webcontrol():
+    pass
 
 def todolist():
     """ Returns all TODO of the requested app
