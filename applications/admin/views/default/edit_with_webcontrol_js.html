@@ -2,22 +2,22 @@
     return XML('<li><span class="teletype-text">%s</span><span>%s</span></li>' % (combo, description))
 }}
 
-<button id="add_as_webcontrol_button">Click me!</button>
+<button id="add-as-webcontrol_button">Click me!</button>
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
-<span id="add-as-webcontrol-dialog" >
-    <form method= "post" class="_web-control-dialog">
-        <!-- TODO: drussell1974 - Load the variable attributes -->
-        <h3>Web control properties</h3>
-        <input type="text" name="control_label" class="input-normal" align="left" placeholder="enter text of the label" />
-        <select name="control_variable" required class="input-normal" id="variables_from_file">
-            <option value="">- select a variable -</option>
-            <option value="input" selected>input</option>
-            <option value="select">dropdown</option>
-        </select>
-        <button type="button" align="left">Add as web control</button>
-    </form>
-</span>
+<div id="add-as-webcontrol_dialog" class="well well-small">
+    <!-- TODO: drussell1974 - Load the variable attributes -->
+    <h3>Web control properties</h3>
+    <label>type:</label>
+    <select name="control_variable" required class="input-normal" id="variables_from_file">
+        <option value="">- select a variable -</option>
+        <option value="input" selected>input</option>
+        <option value="select">dropdown</option>
+    </select>
+    <label>label:</label>
+    <input type="text" name="control_label" class="input-normal" align="left" placeholder="enter text of the label" />
+    <hr>
+</div>
 
 <form action="{{=URL('edit', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" style="float:right;" class="form-inline row-fluid">
         <div id="edit_aswebcontrol_placeholder" class="tab-content span12 well well-small">
@@ -85,6 +85,9 @@
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
         .is-variable {
+            background-color: #fff2ac;
+        }
+        .webcontrol-success {
             background-color: #fff2ac;
         }
         .web-control-dialog {
@@ -212,8 +215,7 @@
                 doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'is-variable' });
             }
             else {
-                // deselect
-                //doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'remove-highlight' });
+                // TODO: drussell1974 - deselect
             }
         }
     }
@@ -224,7 +226,7 @@
 
         myCodeMirror = CodeMirror(doc.body);
 
-        node = document.getElementById('add_as_webcontrol_button');
+        node = document.getElementById('add-as-webcontrol');
 
         myCodeMirror.addWidget(pos = {line: 1, ch: 5}, node = node, scrollIntoView = true);
     }
@@ -242,10 +244,33 @@
                     vble = line_text.split('=');
                     if( vble.length > 1) {
                         // Add button
-                        node = document.getElementById('add_as_webcontrol_button');
+                        node = document.getElementById('add-as-webcontrol_button');
                         doc.setBookmark({line: pos.line, ch:0}, widget = node);
                     }
                 }
+          }
+        });
+    }
+
+    function openInlineEditorOnControlPress(){
+        editor.setOption("extraKeys", {
+          'Ctrl': function(cm) {
+                pos = doc.getCursor();
+                line_text = doc.getLine(pos.line);
+
+                // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
+                if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
+                    vble = line_text.split('=');
+                    if( vble.length > 1) {
+                        // Open the span as a in line editor
+                         node = document.getElementById('add-as-webcontrol_dialog');
+                        // TODO: drussell1974 - close on ctrl press if already open
+
+                        doc.setBookmark({line: pos.line, ch:0}, widget = node);
+                    }
+                }
+
+                // TODO: drussell1974 - on hide write out the attribute
           }
         });
     }
@@ -256,21 +281,25 @@
                 pos = doc.getCursor();
                 line_text = doc.getLine(pos.line);
 
-                // highlight text
-
                 // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
                 if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
                     vble = line_text.split('=');
                     if( vble.length > 1) {
-                        // Open dialog
-                        node = document.getElementById('add-as-webcontrol-dialog');
-                        // TODO: drussell1974 - close dialog if open
 
-                        doc.setBookmark({line: pos.line, ch:0}, widget = node);
+                        // Open dialog (built-in requires dialog/dialog.js  --- see codemirror.net/doc/manual.html#addons
+
+                        node = document.getElementById('add-as-webcontrol_dialog').innerHTML;
+                        cm.openDialog(node,
+                            function() {
+                                cm.openNotification('<div style="color:green;text-align:center;">web form updated</div>', options);
+                            },
+                            options = {
+                                closeOnEnter: true,
+                                closeOnBlur: false
+                            }
+                        )
                     }
                 }
-
-                // TODO: drussell1974 - on hide write out the attribute
           }
         });
     }
@@ -292,8 +321,9 @@
     //editor.on("keypress", on_variable_selection);
     //addButtonOnControlPress();
 
-    openDialogOnControlPress();
+    //openInlineEditorOnControlPress();
 
+    openDialogOnControlPress();
 
 
     </script>
