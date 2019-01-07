@@ -2,10 +2,24 @@
     return XML('<li><span class="teletype-text">%s</span><span>%s</span></li>' % (combo, description))
 }}
 
+<button id="add_as_webcontrol_button">Click me!</button>
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
+<span id="add-as-webcontrol-dialog" >
+    <form method= "post" class="_web-control-dialog">
+        <!-- TODO: drussell1974 - Load the variable attributes -->
+        <h3>Web control properties</h3>
+        <input type="text" name="control_label" class="input-normal" align="left" placeholder="enter text of the label" />
+        <select name="control_variable" required class="input-normal" id="variables_from_file">
+            <option value="">- select a variable -</option>
+            <option value="input" selected>input</option>
+            <option value="select">dropdown</option>
+        </select>
+        <button type="button" align="left">Add as web control</button>
+    </form>
+</span>
 
-<form action="{{=URL('edit', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" class="form-inline row-fluid">
+<form action="{{=URL('edit', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" style="float:right;" class="form-inline row-fluid">
         <div id="edit_aswebcontrol_placeholder" class="tab-content span12 well well-small">
                 <label>Save form control:</label>
                 <a value="save" title="Save file: learn_python/models/simple_form.py" href="#" name="save_webcontrol" onclick="return doClickSaveControl();" class="icon saveicon" style="background-image: -webkit-linear-gradient(top,white,#E6E6E6);">
@@ -70,9 +84,11 @@
 
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
-        .highlight-property {
+        .is-variable {
             background-color: #fff2ac;
-            background-image: linear-gradient(to right, #ffe359 0%, #fff2ac 100%);
+        }
+        .web-control-dialog {
+            float: right;
         }
     </style>
     <script>
@@ -186,44 +202,99 @@
 
     doc = editor.getDoc();
 
-    function highlightText(start, end, options){
+    function highlightIfAVariable(line_text, line_number){
         // highlight text
-        // start = { line: 1, ch: 0 };
-        // end = { line: 1, ch: 4};
-        // options = { className: 'highlight-property' }
+        // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
+        if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
+            vble = line_text.split('=');
+            if( vble.length > 1) {
+                // highlight
+                doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'is-variable' });
+            }
+            else {
+                // deselect
+                //doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'remove-highlight' });
+            }
+        }
+    }
 
-        doc.markText(start, end, options);
+
+    function addButton(){
+        // adds a button to the given position
+
+        myCodeMirror = CodeMirror(doc.body);
+
+        node = document.getElementById('add_as_webcontrol_button');
+
+        myCodeMirror.addWidget(pos = {line: 1, ch: 5}, node = node, scrollIntoView = true);
+    }
+
+    function addButtonOnControlPress(){
+        editor.setOption("extraKeys", {
+          'Ctrl': function(cm) {
+                pos = doc.getCursor();
+                line_text = doc.getLine(pos.line);
+
+                // add control
+
+                // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
+                if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
+                    vble = line_text.split('=');
+                    if( vble.length > 1) {
+                        // Add button
+                        node = document.getElementById('add_as_webcontrol_button');
+                        doc.setBookmark({line: pos.line, ch:0}, widget = node);
+                    }
+                }
+          }
+        });
+    }
+
+    function openDialogOnControlPress(){
+        editor.setOption("extraKeys", {
+          'Ctrl': function(cm) {
+                pos = doc.getCursor();
+                line_text = doc.getLine(pos.line);
+
+                // highlight text
+
+                // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
+                if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
+                    vble = line_text.split('=');
+                    if( vble.length > 1) {
+                        // Open dialog
+                        node = document.getElementById('add-as-webcontrol-dialog');
+                        // TODO: drussell1974 - close dialog if open
+
+                        doc.setBookmark({line: pos.line, ch:0}, widget = node);
+                    }
+                }
+
+                // TODO: drussell1974 - on hide write out the attribute
+          }
+        });
     }
 
     function readFile(){
         // read each line from the start and end (not including the end) in the file
-        variables_found_in_file = [];
+        line_number = 0;
         lines = doc.eachLine(start = 0, end = 20, f = function(line){
-            // TODO: drussell1974 - ensure = is not in a comment (',#,""")... or in a string (', ")
-            if (/"""/.test(line.text) === false && /^#/.test(line.text) === false && /^'/.test(line.text) === false) {
-                vble = line.text.split('=');
-                if( vble.length > 1) {
-                    variables_found_in_file.push(vble[0]);
-                }
-            }
+            highlightIfAVariable(line.text, line_number);
+            line_number = line_number + 1;
         });
-
-        // drussell1974 - populate the drop down 'variables_from_file'
-
-        var select = document.getElementById('variables_from_file');
-        // clear the drop down
-        for (i = 0; i < select.options.length - 1; i++) {
-          select.options[i] = null;
-        }
-        // fill it again
-        for(index in variables_found_in_file) {
-            select.options[select.options.length] = new Option(variables_found_in_file[index], index);
-        }
     }
 
     // TODO: drussell1974 - move to document load event
-    editor.on("changes", readFile);
-    readFile();
+
+    //editor.on("changes", readFile);
+    //readFile();
+    //addButton();
+    //editor.on("keypress", on_variable_selection);
+    //addButtonOnControlPress();
+
+    openDialogOnControlPress();
+
+
 
     </script>
 
