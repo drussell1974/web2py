@@ -5,42 +5,25 @@
 <button id="add-as-webcontrol_button">Click me!</button>
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
-<div id="add-as-webcontrol_dialog" class="well well-small">
+
+<div id="add-as-webcontrol_dialog">
+    <div class="span12 well well-small">
     <!-- TODO: drussell1974 - Load the variable attributes -->
-    <h3>Web control properties</h3>
+    <h3 id="webcontrol-dialog_title">Web control properties</h3>
     <label>type:</label>
-    <select name="control_variable" required class="input-normal" id="variables_from_file">
-        <option value="">- select a variable -</option>
+    <select name="control_type" required class="input-normal" id="webcontrol-dialog_control_type">
+        <option value="" >- select a variable -</option>
         <option value="input" selected>input</option>
         <option value="select">dropdown</option>
     </select>
     <label>label:</label>
-    <input type="text" name="control_label" class="input-normal" align="left" placeholder="enter text of the label" />
+    <input type="text" name="control_label_text" class="input-normal" align="left" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
+    <hr>
+    <input type="button" value="save" class="button btn" style="background-color:#333;color:#fff" id="webcontrol-dialog_save" />
+    <input type="button" value="cancel" class="button btn" style="background-color:#333;color:#fff" id="webcontrol-dialog_close" />
+    </div>
     <hr>
 </div>
-
-<form action="{{=URL('edit', args=filename)}}" method="post" name="editwebcontrolform" id="edit_webcontrolform" style="float:right;" class="form-inline row-fluid">
-        <div id="edit_aswebcontrol_placeholder" class="tab-content span12 well well-small">
-                <label>Save form control:</label>
-                <a value="save" title="Save file: learn_python/models/simple_form.py" href="#" name="save_webcontrol" onclick="return doClickSaveControl();" class="icon saveicon" style="background-image: -webkit-linear-gradient(top,white,#E6E6E6);">
-                    <img alt="Save" src="/admin/static/_2.17.2/images/save_icon.png">
-                </a>
-                <label>Control</label>
-                <select name="control_variable" required class="input-normal" id="variables_from_file">
-                    <!-- TODO: drussell1974 - Load the list of variables in the module or class -->
-                    <option value="">- select a variable -</option>
-                </select>
-                <label>Label:</label>
-                <input type="text" name="control_label" class="input-normal" placeholder="enter text of the label" />
-                <label>Type:</label>
-                <select name="control_variable" required class="input-normal">
-                    <option value="">- select a variable -</option>
-                    <option value="text">Text</option>
-                    <option value="select">Drop down</option>
-                </select>
-                <input type="text" name="select_options" class="input-normal hidden" placeholder="enter comma-seperated options" ></input>
-        </div>
- </form>
 
 <!-- drussell1974 WEB CONTROL EDITOR - END -->
 
@@ -275,9 +258,23 @@
         });
     }
 
+    function writeDecorator(line_number) {
+
+        // set control type
+        control_type = document.getElementById('webcontrol-dialog_control_type');
+        control_type.innerText = "";
+
+        // set label text
+        label_text = document.getElementById('webcontrol-dialog_label_text');
+        label_text.innerText = "";
+    }
+
     function openDialogOnControlPress(){
         editor.setOption("extraKeys", {
-          'Ctrl': function(cm) {
+          'Ctrl-Space': function(cm) {
+                VARIABLE_DECORATOR_SEP = '#@ui_control--->:'
+                PROPERTY_SEP = ','
+                PARAM_ARG_SEP = '='
                 pos = doc.getCursor();
                 line_text = doc.getLine(pos.line);
 
@@ -285,24 +282,67 @@
                 if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
                     vble = line_text.split('=');
                     if( vble.length > 1) {
+                        variable_name = vble[0].trim()
 
                         // Open dialog (built-in requires dialog/dialog.js  --- see codemirror.net/doc/manual.html#addons
+                        node = document.getElementById('add-as-webcontrol_dialog');
 
-                        node = document.getElementById('add-as-webcontrol_dialog').innerHTML;
-                        cm.openDialog(node,
+                        // set title
+                        control_type = document.getElementById('webcontrol-dialog_title');
+                        control_type.innerText = "input for : " + variable_name;
+
+                        // drussell1974 - check if decorator exists
+                        //decorator_line_text = doc.getLine(pos.line-1)
+                        //if (decorator_line_text.startsWith(variable_control_decorator_text) === true) {
+                            decorator = line_text.split(VARIABLE_DECORATOR_SEP);
+                            if (decorator.length > 1) {
+                                param_args = decorator[1].split(PROPERTY_SEP);
+
+                                for (i = 0; i < param_args.length; i++) {
+                                    prm_arg = param_args[i].split(PARAM_ARG_SEP);
+                                    if (prm_arg.length == 2 && prm_arg[0].trim() === 'control_type') {
+                                        // set control type
+                                        control_type = document.getElementById('webcontrol-dialog_control_type');
+                                        for (s = 0; s < control_type.options.length; s++) {
+                                            if (control_type.options.value === prm_arg[1].trim()) {
+                                                control_type.selectedIndex = s;
+                                            }
+                                        }
+                                    }
+
+                                    if (prm_arg.length == 2 && prm_arg[0].trim() === 'label_text') {
+                                        // set label text
+                                        if(prm_arg[1] != null) {
+
+                                            label_text = document.getElementById('webcontrol-dialog_label_text');
+                                            if (control_type.options.value === prm_arg[1]) {
+                                                label_text.innerText = prm_arg[1];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        //}
+
+                        closeDialog = cm.openDialog(node.innerHTML,
                             function() {
-                                cm.openNotification('<div style="color:green;text-align:center;">web form updated</div>', options);
+                                cm.openNotification('<div style="color:green;text-align:center;">web form updated</div>', {bottom: true});
                             },
                             options = {
                                 closeOnEnter: true,
                                 closeOnBlur: false
                             }
                         )
+
+                        document.getElementById('webcontrol-dialog_close').onclick = function() {
+                            closeDialog();
+                        };
                     }
                 }
           }
         });
     }
+
 
     function readFile(){
         // read each line from the start and end (not including the end) in the file
