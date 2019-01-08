@@ -51,11 +51,14 @@
     <label>type:</label>
     <select name="control_type" required class="input-normal" id="webcontrol-dialog_control_type">
         <option value="" >- select a variable -</option>
-        <option value="input" selected>input</option>
-        <option value="select">dropdown</option>
+        <option value="text">Single Line of text</option>
+        <option value="textarea">Multi-line text</option>
+        <option value="number">Number</option>
+        <option value="checked">Tick box</option>
+        <option value="select">Dropdown</option>
     </select>
     <label>label:</label>
-    <input type="text" name="control_label_text" class="input-normal" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
+    <input type="text" name="control_label_text" class="input-normal" placeholder="enter text of the label" id="webcontrol-dialog_label_text"/>
     <input type="button" value="save" onclick="closeProperties('save')" id="webcontrol-save"/> <input type="button" value="cancel" onclick="closeProperties('cancel')"  id="webcontrol-cancel"/>
 </div>
 <!-- drussell1974 WEB CONTROL EDITOR - END -->
@@ -399,25 +402,35 @@
                             param_args = decorator[1].split(PROPERTY_SEP);
 
                             for (i = 0; i < param_args.length; i++) {
+
                                 prm_arg = param_args[i].split(PARAM_ARG_SEP);
+                                console.log('param ' + i + '...' + prm_arg);
+                                // Set Control Type from the decorator
+
                                 if (prm_arg.length == 2 && prm_arg[0].trim() === 'control_type') {
                                     // set control type
                                     control_type = document.getElementById('webcontrol-dialog_control_type');
-                                    for (s = 0; s < control_type.options.length; s++) {
-                                        if (control_type.options.value === prm_arg[1].trim()) {
-                                            control_type.selectedIndex = s;
+                                    console.log('Element = ' + control_type + ' number of options = ' + control_type.options.length);
+                                    console.log('selecting value... ' + prm_arg[1].trim());
+                                    control_type.value = prm_arg[1].trim();
+                                    /*for (s = 0; s < control_type.options.length; s++) {
+                                        console.log(' checking value = ' + control_type.options[s].value)
+                                        if (control_type.options[s].value == prm_arg[1].trim()) {
+                                            console.log('selecting value... ' + prm_arg[1].trim());
+                                            control_type.value = prm_arg[1].trim();
                                         }
-                                    }
+                                    }*/
                                 }
+
+                                // Set Label Text from the decorator
 
                                 if (prm_arg.length == 2 && prm_arg[0].trim() === 'label_text') {
                                     // set label text
                                     if(prm_arg[1] != null) {
 
                                         label_text = document.getElementById('webcontrol-dialog_label_text');
-                                        if (control_type.options.value === prm_arg[1]) {
-                                            label_text.innerText = prm_arg[1];
-                                        }
+                                        console.log('Element = ' + label_text);
+                                        label_text.value = prm_arg[1];
                                     }
                                 }
                             }
