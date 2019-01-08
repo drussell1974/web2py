@@ -4,25 +4,7 @@
 
 <button id="add-as-webcontrol_button">Click me!</button>
 
-<!-- drussell1974 WEB CONTROL EDITOR - START -->
-<div style="display:hidden;">
-<div id="add-as-webcontrol_dialog">
-    <!-- TODO: drussell1974 - Load the variable attributes -->
-    <h3 id="webcontrol-dialog_title">Web control properties</h3>
-    <label>type:</label>
-    <select name="control_type" required class="input-normal" id="webcontrol-dialog_control_type">
-        <option value="" >- select a variable -</option>
-        <option value="input" selected>input</option>
-        <option value="select">dropdown</option>
-    </select>
-    <label>label:</label>
-    <input type="text" name="control_label_text" class="input-normal" align="left" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
-    <p>
-    <label>press enter to close:</label> <input type="button" onclick="closeDialog();" value="close x" />
-    </p>p>
-</div>
-</div>
-<!-- drussell1974 WEB CONTROL EDITOR - END -->
+
 
 <form action="{{=URL('edit', args=filename)}}" method="post" name="editform" id="editform" class="form-inline row-fluid">
 <div class="span12 well well-small">
@@ -62,8 +44,27 @@
 {{pass}}
 </div>
 
+<!-- drussell1974 WEB CONTROL EDITOR - START -->
+<div id="add-as-webcontrol_dialog" class="span12 well well-small">
+    <!-- TODO: drussell1974 - Load the variable attributes -->
+    <b id="webcontrol-dialog_title"></b><br>
+    <label>type:</label>
+    <select name="control_type" required class="input-normal" id="webcontrol-dialog_control_type">
+        <option value="" >- select a variable -</option>
+        <option value="input" selected>input</option>
+        <option value="select">dropdown</option>
+    </select>
+    <label>label:</label>
+    <input type="text" name="control_label_text" class="input-normal" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
+    <p class="align-right">press enter to close: <input type="button" onclick="closeWebControlDialog();" value="close x" /></p>
+</div>
+<!-- drussell1974 WEB CONTROL EDITOR - END -->
+
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
+        .align-right {
+            text-align: right;
+        }
         .notify {
             text-align:center;
         }
@@ -322,7 +323,7 @@
                             }
                         //}
 
-                        closeDialog = cm.openDialog(node.innerHTML,
+                        closeWebControlDialog = cm.openDialog(node.innerHTML,
                             function() {
                                 cm.openNotification('<div class="notify success-notify">web form updated</div>', {bottom: false});
                             },
@@ -334,6 +335,64 @@
                                 }
                             }
                         )
+                    }
+                }
+          }
+        });
+    }
+
+
+    function showPropertiesOnControlPress(){
+        editor.setOption("extraKeys", {
+          'Ctrl-Space': function(cm) {
+                VARIABLE_DECORATOR_SEP = '#@ui_control--->:'
+                PROPERTY_SEP = ','
+                PARAM_ARG_SEP = '='
+                pos = doc.getCursor();
+                line_text = doc.getLine(pos.line);
+
+                // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
+
+                if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
+                    vble = line_text.split('=');
+                    if( vble.length > 1) {
+                        variable_name = vble[0].trim()
+
+                        // Open dialog (built-in requires dialog/dialog.js  --- see codemirror.net/doc/manual.html#addons
+                        node = document.getElementById('add-as-webcontrol_dialog');
+
+                        // set title
+                        control_type = document.getElementById('webcontrol-dialog_title');
+                        control_type.innerText = "set properties for " + variable_name + ":"
+
+                        decorator = line_text.split(VARIABLE_DECORATOR_SEP);
+                        if (decorator.length > 1) {
+                            param_args = decorator[1].split(PROPERTY_SEP);
+
+                            for (i = 0; i < param_args.length; i++) {
+                                prm_arg = param_args[i].split(PARAM_ARG_SEP);
+                                if (prm_arg.length == 2 && prm_arg[0].trim() === 'control_type') {
+                                    // set control type
+                                    control_type = document.getElementById('webcontrol-dialog_control_type');
+                                    for (s = 0; s < control_type.options.length; s++) {
+                                        if (control_type.options.value === prm_arg[1].trim()) {
+                                            control_type.selectedIndex = s;
+                                        }
+                                    }
+                                }
+
+                                if (prm_arg.length == 2 && prm_arg[0].trim() === 'label_text') {
+                                    // set label text
+                                    if(prm_arg[1] != null) {
+
+                                        label_text = document.getElementById('webcontrol-dialog_label_text');
+                                        if (control_type.options.value === prm_arg[1]) {
+                                            label_text.innerText = prm_arg[1];
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
           }
@@ -360,8 +419,8 @@
 
     //openInlineEditorOnControlPress();
 
-    openDialogOnControlPress();
-
+    //openDialogOnControlPress();
+    showPropertiesOnControlPress();
 
     </script>
 
