@@ -61,6 +61,10 @@ function showPropertiesOnControlPress(){
                     control_type = document.getElementById('webcontrol-dialog_title');
                     control_type.innerText = "Properties for " + variable_name + ":"
 
+                    // get the proprety-value controls
+                    label_text = document.getElementById('webcontrol-dialog_label_text');
+                    control_type = document.getElementById('webcontrol-dialog_control_type');
+
                     // get the parameters from the decorator section of the
 
                     decorator = line_text.split(VARIABLE_DECORATOR_SEP);
@@ -80,20 +84,21 @@ function showPropertiesOnControlPress(){
                             // Set the Control Type property control value from the decorator
 
                             if (prm_arg.length == 2 && prm_arg[0].trim() == 'control_type') {
-                                control_type = document.getElementById('webcontrol-dialog_control_type').value = prm_arg[1].trim();
+                                control_type.value = prm_arg[1].trim();
                             }
 
                             // Set the Label Text property control value from the decorator
 
                             if (prm_arg.length == 2 && prm_arg[0].trim() == 'label_text') {
                                 if(prm_arg[1] != null) {
-
-                                    label_text = document.getElementById('webcontrol-dialog_label_text');
-                                    console.log('Element = ' + label_text);
                                     label_text.value = prm_arg[1];
                                 }
                             }
                         }
+                    } else {
+                        // set property-value control to default
+                        control_type.selectedIndex = 0;
+                        label_text.value = null;
                     }
                 }
             }
