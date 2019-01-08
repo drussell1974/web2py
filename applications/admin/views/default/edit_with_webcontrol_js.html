@@ -5,7 +5,7 @@
 <button id="add-as-webcontrol_button">Click me!</button>
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
-
+<div style="display:hidden;">
 <div id="add-as-webcontrol_dialog">
     <!-- TODO: drussell1974 - Load the variable attributes -->
     <h3 id="webcontrol-dialog_title">Web control properties</h3>
@@ -17,11 +17,11 @@
     </select>
     <label>label:</label>
     <input type="text" name="control_label_text" class="input-normal" align="left" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
-    <hr>
-    <label>press enter to close:</label>
-    <hr>
+    <p>
+    <label>press enter to close:</label> <input type="button" onclick="closeDialog();" value="close x" />
+    </p>p>
 </div>
-
+</div>
 <!-- drussell1974 WEB CONTROL EDITOR - END -->
 
 <form action="{{=URL('edit', args=filename)}}" method="post" name="editform" id="editform" class="form-inline row-fluid">
@@ -64,8 +64,15 @@
 
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
-        .highlighted {
+        .notify {
+            text-align:center;
+        }
+        .success-notify {
             background-color: #fff2ac;
+        }
+        .warning-notify {
+            background-color: #ff6666;
+            color:white;
         }
     </style>
     <script>
@@ -315,13 +322,16 @@
                             }
                         //}
 
-                        cm.openDialog(node.innerHTML,
+                        closeDialog = cm.openDialog(node.innerHTML,
                             function() {
-                                cm.openNotification('<div style="color:green;text-align:center;" class="highlighted">web form updated</div>', {bottom: false});
+                                cm.openNotification('<div class="notify success-notify">web form updated</div>', {bottom: false});
                             },
                             options = {
                                 closeOnEnter: true,
-                                closeOnBlur: false
+                                closeOnBlur: false,
+                                onClose: function() {
+                                    cm.openNotification('<div class="notify warning-notify">cancelled</div>', {bottom: false});
+                                }
                             }
                         )
                     }
