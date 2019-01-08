@@ -7,7 +7,6 @@
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
 
 <div id="add-as-webcontrol_dialog">
-    <div class="span12 well well-small">
     <!-- TODO: drussell1974 - Load the variable attributes -->
     <h3 id="webcontrol-dialog_title">Web control properties</h3>
     <label>type:</label>
@@ -19,9 +18,7 @@
     <label>label:</label>
     <input type="text" name="control_label_text" class="input-normal" align="left" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
     <hr>
-    <input type="button" value="save" class="button btn" style="background-color:#333;color:#fff" id="webcontrol-dialog_save" />
-    <input type="button" value="cancel" class="button btn" style="background-color:#333;color:#fff" id="webcontrol-dialog_close" />
-    </div>
+    <label>press enter to close:</label>
     <hr>
 </div>
 
@@ -67,14 +64,8 @@
 
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
-        .is-variable {
+        .highlighted {
             background-color: #fff2ac;
-        }
-        .webcontrol-success {
-            background-color: #fff2ac;
-        }
-        .web-control-dialog {
-            float: right;
         }
     </style>
     <script>
@@ -195,7 +186,7 @@
             vble = line_text.split('=');
             if( vble.length > 1) {
                 // highlight
-                doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'is-variable' });
+                doc.markText({line: line_number, ch:0}, {line: line_number, ch:vble[0].trim().length}, options = { className: 'highlighted' });
             }
             else {
                 // TODO: drussell1974 - deselect
@@ -324,19 +315,15 @@
                             }
                         //}
 
-                        closeDialog = cm.openDialog(node.innerHTML,
+                        cm.openDialog(node.innerHTML,
                             function() {
-                                cm.openNotification('<div style="color:green;text-align:center;">web form updated</div>', {bottom: true});
+                                cm.openNotification('<div style="color:green;text-align:center;" class="highlighted">web form updated</div>', {bottom: false});
                             },
                             options = {
                                 closeOnEnter: true,
                                 closeOnBlur: false
                             }
                         )
-
-                        document.getElementById('webcontrol-dialog_close').onclick = function() {
-                            closeDialog();
-                        };
                     }
                 }
           }
