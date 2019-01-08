@@ -45,7 +45,7 @@
 </div>
 
 <!-- drussell1974 WEB CONTROL EDITOR - START -->
-<div id="add-as-webcontrol_dialog" class="span12 well well-small">
+<div id="add-as-webcontrol_dialog" class="span12 well well-small" style="display:none;">
     <!-- TODO: drussell1974 - Load the variable attributes -->
     <b id="webcontrol-dialog_title"></b><br>
     <label>type:</label>
@@ -56,15 +56,12 @@
     </select>
     <label>label:</label>
     <input type="text" name="control_label_text" class="input-normal" placeholder="enter text of the label" id="webcontrol-dialog_control_label_text"/>
-    <p class="align-right">press enter to close: <input type="button" onclick="closeWebControlDialog();" value="close x" /></p>
+    <input type="button" value="save" onclick="closeProperties('save')" id="webcontrol-save"/> <input type="button" value="cancel" onclick="closeProperties('cancel')"  id="webcontrol-cancel"/>
 </div>
 <!-- drussell1974 WEB CONTROL EDITOR - END -->
 
     <textarea style=" height:100%; direction:ltr;" id="textarea_{{=id}}" class="input-block-level" name="data" >{{=data}}</textarea>
     <style>
-        .align-right {
-            text-align: right;
-        }
         .notify {
             text-align:center;
         }
@@ -341,6 +338,17 @@
         });
     }
 
+    function closeProperties(cm, action){
+
+        node = document.getElementById('add-as-webcontrol_dialog');
+        node.style.display = "none";
+        if (action == "save"){
+            CodeMirror.openNotification('<div class="notify success-notify">web form updated</div>', {bottom: false});
+        } else {
+            CodeMirror.openNotification('<div class="notify warning-notify">cancelled</div>', {bottom: false});
+        }
+    }
+
 
     function showPropertiesOnControlPress(){
         editor.setOption("extraKeys", {
@@ -351,6 +359,26 @@
                 pos = doc.getCursor();
                 line_text = doc.getLine(pos.line);
 
+                webcontrol_save = document.getElementById('webcontrol-save').onclick = function save() {
+                    node = document.getElementById('add-as-webcontrol_dialog');
+                    node.style.display = "none";
+
+                    // TODO: drussell1974 - Append properties as comment e.g. #@ui_control--->:control_type=text,label_text=Name:
+                    // or append variable to function decorator that will be called at run time to get request.vars
+
+                    // TODO: always hide comment in editor
+
+                    cm.openNotification('<div class="notify success-notify">web form updated</div>', {bottom: false});
+                }
+
+                webcontrol_cancel = document.getElementById('webcontrol-cancel').onclick = function cancel() {
+                    node = document.getElementById('add-as-webcontrol_dialog');
+                    node.style.display = "none";
+                    cm.openNotification('<div class="notify warning-notify">cancelled</div>', {bottom: false});
+                }
+
+
+
                 // drussell1974 - ensure line is not in a comment (',#,""")... or in a string (', ")
 
                 if (/"""/.test(line_text) === false && /^#/.test(line_text) === false && /^'/.test(line_text) === false) {
@@ -360,6 +388,7 @@
 
                         // Open dialog (built-in requires dialog/dialog.js  --- see codemirror.net/doc/manual.html#addons
                         node = document.getElementById('add-as-webcontrol_dialog');
+                        node.style.display = "block";
 
                         // set title
                         control_type = document.getElementById('webcontrol-dialog_title');
